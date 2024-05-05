@@ -11,8 +11,9 @@ async function bootstrap() {
     .setDescription(
       'Api used for access management and user registration, as well as authentication and token validation',
     )
-    .setVersion('0.2.0')
+    .setVersion('0.6.0')
     .addTag('users')
+    .addTag('Authentication')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

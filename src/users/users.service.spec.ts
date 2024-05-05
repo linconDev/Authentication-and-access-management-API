@@ -100,4 +100,36 @@ describe('UsersService', () => {
       BadRequestException,
     );
   });
+
+  it('should return a user if email matches', async () => {
+    const mockUser = { id: 1, email: 'test@example.com' };
+    (mockUserRepository.findOne as jest.Mock).mockResolvedValue(mockUser);
+
+    const result = await service.findOneByEmail('test@example.com');
+    expect(result).toEqual(mockUser);
+    expect(mockLoggerService.log).toHaveBeenCalledWith(
+      'User found for email: test@example.com',
+    );
+  });
+
+  it('should return null if no user matches', async () => {
+    (mockUserRepository.findOne as jest.Mock).mockResolvedValue(null);
+
+    const result = await service.findOneByEmail('test@example.com');
+    expect(result).toBeNull();
+    expect(mockLoggerService.log).toHaveBeenCalledWith(
+      'No user found for email: test@example.com',
+    );
+  });
+
+  it('should handle errors', async () => {
+    (mockUserRepository.findOne as jest.Mock).mockRejectedValue(
+      new Error('Database error'),
+    );
+
+    await expect(service.findOneByEmail('error@example.com')).rejects.toThrow(
+      BadRequestException,
+    );
+    expect(mockLoggerService.error).toHaveBeenCalled();
+  });
 });

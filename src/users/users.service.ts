@@ -45,4 +45,24 @@ export class UsersService {
       throw new BadRequestException('Failed to save new user.');
     }
   }
+
+  async findOneByEmail(email: string): Promise<User | null> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { email },
+      });
+      if (!user) {
+        this.logger.log(`No user found for email: ${email}`);
+        return null;
+      }
+      this.logger.log(`User found for email: ${email}`);
+      return user;
+    } catch (error) {
+      this.logger.error(
+        `Error retrieving user by email: ${error.message}`,
+        error.stack,
+      );
+      throw new BadRequestException('Error retrieving user information.');
+    }
+  }
 }
