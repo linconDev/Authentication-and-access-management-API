@@ -1,26 +1,48 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from './entities/user.entity';
+import * as bcrypt from 'bcrypt';
+import { LoggerService } from '@logger/logger.service';
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
-  }
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    private logger: LoggerService,
+  ) {}
 
-  findAll() {
-    return `This action returns all users`;
-  }
+  async create(createUserDto: CreateUserDto) {
+    const { name, email, password } = createUserDto;
+    const existingUser = await this.userRepository.findOne({
+      where: { email },
+    });
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
+    if (existingUser) {
+      this.logger.warn(`Attempt to register with used email: ${email}`);
+      throw new BadRequestException('Email alread in use.');
+    }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+    const newUser = this.userRepository.create({
+      name,
+      email,
+      password: hashedPassword,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+
+    try {
+      const savedUser = await this.userRepository.save(newUser);
+      this.logger.log(`New user registered: ${savedUser.id}`);
+      return savedUser;
+    } catch (error) {
+      this.logger.error(`Error saving new user: ${error.message}`, error.stack);
+      throw new BadRequestException('Failed to save new user.');
+    }
   }
 }
