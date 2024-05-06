@@ -132,4 +132,47 @@ describe('UsersService', () => {
     );
     expect(mockLoggerService.error).toHaveBeenCalled();
   });
+
+  it('should return user profile without password', async () => {
+    const mockUser = {
+      id: 1,
+      name: 'John Doe',
+      email: 'john@example.com',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    (mockUserRepository.findOne as jest.Mock).mockResolvedValue(mockUser);
+
+    const result = await service.findOneByEmailRetProfile('john@example.com');
+    expect(result).toEqual(mockUser);
+    expect(mockLoggerService.log).toHaveBeenCalledWith(
+      'User found for email: john@example.com',
+    );
+  });
+
+  it('should log and return null when no user is found for email in profile retrieval', async () => {
+    const email = 'nonexistent@example.com';
+    (mockUserRepository.findOne as jest.Mock).mockResolvedValue(null);
+
+    const result = await service.findOneByEmailRetProfile(email);
+    expect(result).toBeNull();
+    expect(mockLoggerService.log).toHaveBeenCalledWith(
+      `No user found for email: ${email}`,
+    );
+  });
+
+  it('should log an error and throw BadRequestException when an exception occurs during email retrieval', async () => {
+    const email = 'error@example.com';
+    const mockError = new Error('Database error');
+
+    (mockUserRepository.findOne as jest.Mock).mockRejectedValue(mockError);
+
+    await expect(service.findOneByEmailRetProfile(email)).rejects.toThrow(
+      BadRequestException,
+    );
+    expect(mockLoggerService.error).toHaveBeenCalledWith(
+      `Error retrieving user by email: ${mockError.message}`,
+      mockError.stack,
+    );
+  });
 });

@@ -46,6 +46,27 @@ export class UsersService {
     }
   }
 
+  async findOneByEmailRetProfile(email: string): Promise<User | null> {
+    try {
+      const user = await this.userRepository.findOne({
+        select: ['id', 'name', 'email', 'created_at', 'updated_at'],
+        where: { email },
+      });
+      if (!user) {
+        this.logger.log(`No user found for email: ${email}`);
+        return null;
+      }
+      this.logger.log(`User found for email: ${email}`);
+      return user;
+    } catch (error) {
+      this.logger.error(
+        `Error retrieving user by email: ${error.message}`,
+        error.stack,
+      );
+      throw new BadRequestException('Error retrieving user information.');
+    }
+  }
+
   async findOneByEmail(email: string): Promise<User | null> {
     try {
       const user = await this.userRepository.findOne({

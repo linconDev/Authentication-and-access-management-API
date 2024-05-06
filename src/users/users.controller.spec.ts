@@ -1,11 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
 import { LoggerService } from '@logger/logger.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ExecutionContext } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -17,9 +17,16 @@ describe('UsersController', () => {
       create: jest.fn().mockImplementation((dto: CreateUserDto) =>
         Promise.resolve({
           id: Date.now(),
-          name: dto.name,
-          email: dto.email,
-          password: dto.password,
+          ...dto,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }),
+      ),
+      findOneByEmailRetProfile: jest.fn().mockImplementation((email) =>
+        Promise.resolve({
+          id: 1,
+          name: 'John Doe',
+          email: email,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         }),
@@ -36,21 +43,11 @@ describe('UsersController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
       providers: [
+        { provide: UsersService, useValue: mockUsersService },
+        { provide: LoggerService, useValue: mockLoggerService },
         {
-          provide: UsersService,
-          useValue: mockUsersService,
-        },
-        {
-          provide: LoggerService,
-          useValue: mockLoggerService,
-        },
-        {
-          provide: getRepositoryToken(User),
-          useValue: {
-            findOne: jest.fn(),
-            create: jest.fn(),
-            save: jest.fn(),
-          },
+          provide: JwtAuthGuard,
+          useValue: { canActivate: (context: ExecutionContext) => true },
         },
       ],
     }).compile();
@@ -116,6 +113,26 @@ describe('UsersController', () => {
     expect(mockLoggerService.error).toHaveBeenCalledWith(
       `Error saving new user: ${error.message}`,
       error.stack,
+    );
+  });
+
+  it('should return user profile if authenticated', async () => {
+    const req = {
+      user: {
+        email: 'john@example.com',
+      },
+    };
+    const profile = await controller.getProfile(req);
+
+    expect(profile).toEqual({
+      id: 1,
+      name: 'John Doe',
+      email: 'john@example.com',
+      created_at: expect.any(String),
+      updated_at: expect.any(String),
+    });
+    expect(mockUsersService.findOneByEmailRetProfile).toHaveBeenCalledWith(
+      'john@example.com',
     );
   });
 });

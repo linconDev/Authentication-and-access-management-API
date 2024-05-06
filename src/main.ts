@@ -12,6 +12,7 @@ async function bootstrap() {
       'Api used for access management and user registration, as well as authentication and token validation',
     )
     .setVersion('0.6.0')
+    .addBearerAuth()
     .addTag('users')
     .addTag('Authentication')
     .build();
