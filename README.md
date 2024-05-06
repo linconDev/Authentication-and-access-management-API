@@ -213,11 +213,7 @@ curl --request DELETE \
 
 So far we have only developed these functionalities containing an initial cycle of an application that needs the basics to get started and because it is in nest.js it is fully scalable, thus allowing you to add all the functionalities that your application will consume with ease, I recommend I strongly recommend reading the official nest documentation https://docs.nestjs.com, for this reason I am leaving this repository public to help our community of developers save a good few initial hours when developing an api. However, if you want to thank us with a coffee for the help provided here, I will leave a PayPal donation link below along with my personal contacts if you want a freelancer in your future projects.
 
-<form action="https://www.paypal.com/donate" method="post" target="_top">
-<input type="hidden" name="hosted_button_id" value="EAM7ZX44FPGUC" />
-<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
-<img alt="" border="0" src="https://www.paypal.com/en_BR/i/scr/pixel.gif" width="1" height="1" />
-</form>
+[![Donate with PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate?hosted_button_id=EAM7ZX44FPGUC)
 
 My contacts
 
