@@ -16,6 +16,7 @@ describe('UsersService', () => {
       findOne: jest.fn(),
       create: jest.fn(),
       save: jest.fn(),
+      delete: jest.fn(),
     };
     mockLoggerService = {
       log: jest.fn(),
@@ -173,6 +174,46 @@ describe('UsersService', () => {
     expect(mockLoggerService.error).toHaveBeenCalledWith(
       `Error retrieving user by email: ${mockError.message}`,
       mockError.stack,
+    );
+  });
+
+  it('should delete a user successfully when a valid ID is provided', async () => {
+    (mockUserRepository.delete as jest.Mock).mockResolvedValue({ affected: 1 });
+    await service.deleteUserById(1);
+    expect(mockLoggerService.log).toHaveBeenCalledWith(
+      'User deleted with ID: 1',
+    );
+  });
+
+  it('should throw NotFoundException if no user is found with the provided ID', async () => {
+    (mockUserRepository.delete as jest.Mock).mockResolvedValue({ affected: 0 });
+    await expect(service.deleteUserById(1)).rejects.toThrow(
+      BadRequestException,
+    );
+    expect(mockLoggerService.warn).toHaveBeenCalledWith(
+      'No user found with ID: 1',
+    );
+  });
+
+  it('should throw BadRequestException when no valid ID is provided', async () => {
+    await expect(service.deleteUserById(null)).rejects.toThrow(
+      BadRequestException,
+    );
+    expect(mockLoggerService.error).toHaveBeenCalledWith(
+      'Attempted to delete a user without a valid ID',
+      '',
+    );
+  });
+
+  it('should handle errors during the deletion process', async () => {
+    const error = new Error('Database error');
+    (mockUserRepository.delete as jest.Mock).mockRejectedValue(error);
+    await expect(service.deleteUserById(1)).rejects.toThrow(
+      BadRequestException,
+    );
+    expect(mockLoggerService.error).toHaveBeenCalledWith(
+      'Error deleting user: Database error',
+      error.stack,
     );
   });
 });

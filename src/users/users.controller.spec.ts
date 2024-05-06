@@ -31,6 +31,7 @@ describe('UsersController', () => {
           updated_at: new Date().toISOString(),
         }),
       ),
+      deleteUserById: jest.fn().mockResolvedValue({ affected: 1 }),
     };
 
     mockLoggerService = {
@@ -133,6 +134,44 @@ describe('UsersController', () => {
     });
     expect(mockUsersService.findOneByEmailRetProfile).toHaveBeenCalledWith(
       'john@example.com',
+    );
+  });
+
+  it('should delete a user successfully when provided a valid user ID', async () => {
+    const mockRequest = {
+      user: {
+        id: 1,
+      },
+    };
+    const result = await controller.deleteUser(mockRequest);
+
+    expect(mockUsersService.deleteUserById).toHaveBeenCalledWith(1);
+    expect(result).toEqual({ message: 'User account deleted successfully.' });
+  });
+
+  it('should throw an error if user ID is not found in the token', async () => {
+    const mockRequest = {
+      user: {},
+    };
+
+    await expect(controller.deleteUser(mockRequest)).rejects.toThrow(
+      BadRequestException,
+    );
+    expect(mockLoggerService.error).toHaveBeenCalledWith(
+      'User ID not found in JWT token',
+      '',
+    );
+  });
+
+  it('should handle errors gracefully when deleteUserById fails', async () => {
+    const mockRequest = {
+      user: { id: 1 },
+    };
+    const error = new BadRequestException('Failed to delete the user.');
+    (mockUsersService.deleteUserById as jest.Mock).mockRejectedValue(error);
+
+    await expect(controller.deleteUser(mockRequest)).rejects.toThrow(
+      BadRequestException,
     );
   });
 });

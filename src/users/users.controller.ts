@@ -10,6 +10,7 @@ import {
   UseGuards,
   Get,
   Request,
+  Delete,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -64,5 +65,26 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async getProfile(@Request() req) {
     return this.usersService.findOneByEmailRetProfile(req.user.email);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('delete')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete user account' })
+  @ApiResponse({
+    status: 200,
+    description: 'User account deleted successfully.',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 404, description: 'User not found.' })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  async deleteUser(@Request() req) {
+    if (!req.user.id) {
+      this.logger.error('User ID not found in JWT token', '');
+      throw new BadRequestException('Invalid token: User ID not found.');
+    }
+
+    await this.usersService.deleteUserById(req.user.id);
+    return { message: 'User account deleted successfully.' };
   }
 }

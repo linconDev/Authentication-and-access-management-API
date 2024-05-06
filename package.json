@@ -1,6 +1,6 @@
 {
   "name": "authentication-and-access-management-api",
-  "version": "0.6.0",
+  "version": "0.8.0",
   "description": "This API was carefully developed, with special focus on each functionality, aiming for security, error handling and scalability. With it you can register users and authenticate with their appropriate access credentials provided at the time of registration. See the Swagger documentation located at the api/docs endpoint, execute each request and run your tests, each endpoint has a detailed explanation of what it returns, and what needs to be provided in each request.",
   "author": "Lincon Venicios Gallo dos Santos",
   "private": true,

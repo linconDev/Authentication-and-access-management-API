@@ -1,4 +1,4 @@
-[05/05/2024] - [0.7.0] - Added packages
+[05/05/2024] - [0.9.0] - Added packages
 
 1. Feature: SQLite database to assist in development, the database file is created when the project is executed.
 2. Feature: User Module with newly added registration method.
@@ -6,6 +6,8 @@
 4. Feature: Unit tests added, 100% test coverage so far when we only have the user registration method in the user registration module.
 5. Feature: Business rule for the properly implemented authentication module.
 6. Feature: Inclusion of a /users/profile endpoint where the user can consult their profile data based on the token obtained at the time of login.
+7. Feature: To follow the convention where the user himself can request that his data be removed, following the general data protection law, meaning that he may lose access to the system as his personal data is removed, we include the removal endpoint / users/delete, you must be logged in so that the system can retrieve the information from the authenticated token to search for the user in the database and remove it.
+8. Doc: documentation improvements
 
 [04/05/2024] - [0.1.0] - Added packages
 

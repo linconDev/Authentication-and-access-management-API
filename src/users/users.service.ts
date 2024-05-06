@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -84,6 +88,24 @@ export class UsersService {
         error.stack,
       );
       throw new BadRequestException('Error retrieving user information.');
+    }
+  }
+
+  async deleteUserById(id: number): Promise<void> {
+    if (!id) {
+      this.logger.error('Attempted to delete a user without a valid ID', '');
+      throw new BadRequestException('A valid ID is required to delete a user.');
+    }
+    try {
+      const result = await this.userRepository.delete(id);
+      if (result.affected === 0) {
+        this.logger.warn(`No user found with ID: ${id}`);
+        throw new NotFoundException('No user found with provided ID.');
+      }
+      this.logger.log(`User deleted with ID: ${id}`);
+    } catch (error) {
+      this.logger.error(`Error deleting user: ${error.message}`, error.stack);
+      throw new BadRequestException('Failed to delete the user.');
     }
   }
 }
